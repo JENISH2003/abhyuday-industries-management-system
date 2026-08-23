@@ -49,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
     { to: '/personal-reminders', label: 'Personal Reminders', icon: BellRing, roles: ['super_admin', 'admin', 'manager', 'user'] },
     { to: '/meetings', label: 'Meetings', icon: Calendar, roles: ['super_admin', 'admin', 'manager', 'user'] },
     { to: '/logs', label: 'Activity Logs', icon: FileText, roles: ['super_admin', 'admin'] },
-    { to: '/users', label: 'User Management', icon: Users, roles: ['super_admin', 'admin'] },
+    { to: '/users', label: 'User Management', icon: Users, roles: ['super_admin'] },
     { to: '/settings', label: 'Settings & Backups', icon: Settings, roles: ['super_admin'] },
     { to: '/profile', label: 'Profile', icon: User, roles: ['super_admin', 'admin', 'manager', 'user'] },
   ];

@@ -112,7 +112,7 @@ export const App: React.FC = () => {
           <Route
             path="/users"
             element={
-              <RoleGuard allowedRoles={['super_admin', 'admin']}>
+              <RoleGuard allowedRoles={['super_admin']}>
                 <UsersList />
               </RoleGuard>
             }
