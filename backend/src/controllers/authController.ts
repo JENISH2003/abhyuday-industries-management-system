@@ -20,17 +20,19 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
   try {
     const validatedBody = RegisterValidator.parse(req.body);
 
-    const userExists = await User.findOne({ email: validatedBody.email });
+    const targetEmail = validatedBody.email.trim().toLowerCase();
+    const escapedEmail = targetEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const userExists = await User.findOne({ email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') } });
     if (userExists) {
       return res.status(400).json({ message: 'User with this email already exists' });
     }
 
     const superAdminEmail = (process.env.SUPERADMIN_EMAIL || 'jenishkpatel2003@gmail.com').toLowerCase();
-    const isSuperAdminEmail = validatedBody.email.toLowerCase() === superAdminEmail;
+    const isSuperAdminEmail = targetEmail === superAdminEmail;
 
     const newUser = new User({
-      name: validatedBody.name,
-      email: validatedBody.email,
+      name: validatedBody.name.trim(),
+      email: targetEmail,
       password: validatedBody.password,
       role: isSuperAdminEmail ? 'super_admin' : 'admin',
       status: 'active',
@@ -58,7 +60,8 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const validatedBody = LoginValidator.parse(req.body);
 
     const targetEmail = validatedBody.email.trim().toLowerCase();
-    const user = await User.findOne({ email: targetEmail });
+    const escapedEmail = targetEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const user = await User.findOne({ email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') } });
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
