@@ -55,9 +55,11 @@ export const checkPersonalReminders = async (
       }
 
       let emailSent = false;
+      let emailAttempted = false;
 
-      // 1. Send Email Notification if enabled
-      if (reminder.notifyEmail && recipientEmail) {
+      // 1. Send Email Notification if enabled OR if Manual Trigger
+      if ((reminder.notifyEmail || slotLabel === 'Manual Trigger') && recipientEmail) {
+        emailAttempted = true;
         const subject = `🔔 Personal Reminder: ${reminder.title} (${slotLabel})`;
         const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
@@ -67,7 +69,7 @@ export const checkPersonalReminders = async (
             </div>
 
             <p style="color: #334155; font-size: 15px;">Hello <strong>${userName}</strong>,</p>
-            <p style="color: #334155; font-size: 14px;">This is your scheduled personal reminder:</p>
+            <p style="color: #334155; font-size: 14px;">This is your personal reminder alert:</p>
 
             <div style="background-color: #f0fdf4; border-left: 4px solid #16a34a; padding: 16px; border-radius: 8px; margin: 20px 0;">
               <h3 style="margin: 0 0 8px 0; color: #166534; font-size: 18px;">${reminder.title}</h3>
@@ -98,19 +100,33 @@ export const checkPersonalReminders = async (
           userName: userName,
           module: 'System',
           action: 'Personal Reminder Triggered',
-          details: `Personal reminder "${reminder.title}" executed (${slotLabel}).`,
+          details: `Personal reminder "${reminder.title}" executed (${slotLabel}). Email status: ${emailSent ? 'Delivered' : emailAttempted ? 'Delivery Failed (SMTP)' : 'Disabled'}.`,
           ipAddress: '127.0.0.1',
           timestamp: new Date(),
         });
       }
 
-      // 3. Record Execution Log
+      // 3. Record Execution Log with exact status
+      let logStatus: 'sent' | 'failed' | 'skipped' = 'skipped';
+      let logDetails = `Processed (${slotLabel})`;
+
+      if (emailSent) {
+        logStatus = 'sent';
+        logDetails = `Email delivered to ${recipientEmail}`;
+      } else if (emailAttempted) {
+        logStatus = 'failed';
+        logDetails = `Email dispatch failed (Check SMTP credentials)`;
+      } else {
+        logStatus = 'skipped';
+        logDetails = `Email notification disabled by user`;
+      }
+
       reminder.lastTriggeredAt = new Date();
       reminder.executionHistory.push({
         triggeredAt: new Date(),
         slot: slotLabel,
-        status: emailSent ? 'sent' : 'skipped',
-        details: emailSent ? `Email sent to ${recipientEmail}` : `Processed (${slotLabel})`,
+        status: logStatus,
+        details: logDetails,
       });
 
       // Auto-complete ONLY after the end date has fully passed
