@@ -73,13 +73,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const superAdminEmail = (process.env.SUPERADMIN_EMAIL || 'jenishkpatel2003@gmail.com').toLowerCase();
     const isSuperAdminUser = user.email.toLowerCase() === superAdminEmail;
 
-    let isMatch = await user.comparePassword(validatedBody.password);
-    if (!isMatch && isSuperAdminUser && (validatedBody.password === 'Jenish@2003' || validatedBody.password === 'Jenish@2004')) {
-      user.password = validatedBody.password;
-      await user.save();
-      isMatch = true;
-    }
-
+    const isMatch = await user.comparePassword(validatedBody.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password. Please verify your credentials.' });
     }
@@ -605,6 +599,9 @@ export const resetPasswordWithOtp = async (req: Request, res: Response, next: Ne
     user.lastOtpSentAt = null;
 
     await user.save();
+
+    // Revoke all previous active login sessions on all devices for security
+    await RefreshToken.deleteMany({ user: user._id });
 
     // Log security audit event in ActivityLog
     const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
