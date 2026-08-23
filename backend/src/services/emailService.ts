@@ -4,13 +4,17 @@ import EmailLog from '../models/EmailLog';
 import EmailSetting from '../models/EmailSetting';
 
 export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer.Transporter; from: string }> => {
-  // Check if active custom SMTP configuration exists in database or env
   const dbSetting = await EmailSetting.findOne().sort({ updatedAt: -1 });
 
   const host = dbSetting?.smtpHost || config.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(dbSetting?.smtpPort || config.SMTP_PORT || 465);
   const user = dbSetting?.smtpUser || config.SMTP_USER;
-  const pass = dbSetting?.smtpPass || config.SMTP_PASS;
+  let pass = dbSetting?.smtpPass || config.SMTP_PASS;
+
+  // Handle masked or missing password fallback to environment config
+  if (!pass || pass === '********') {
+    pass = config.SMTP_PASS;
+  }
 
   if (user && pass && user !== 'mock_user') {
     const transporter = nodemailer.createTransport({
