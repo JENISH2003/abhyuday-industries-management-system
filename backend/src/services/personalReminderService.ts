@@ -1,5 +1,6 @@
 import PersonalReminder from '../models/PersonalReminder';
 import ActivityLog from '../models/ActivityLog';
+import User from '../models/User';
 import { sendMail } from './emailService';
 
 export const checkPersonalReminders = async (
@@ -33,9 +34,20 @@ export const checkPersonalReminders = async (
     console.log(`[PERSONAL REMINDERS] Firing check (${slotLabel}). Found ${activeReminders.length} reminder(s).`);
 
     for (const reminder of activeReminders) {
-      const userObj: any = reminder.user;
-      const recipientEmail = userObj?.email;
-      const userName = userObj?.name || 'User';
+      let userObj: any = reminder.user;
+      let recipientEmail = userObj?.email;
+      let userName = userObj?.name;
+
+      if (!recipientEmail && reminder.user) {
+        const foundUser = await User.findById(reminder.user);
+        if (foundUser) {
+          recipientEmail = foundUser.email;
+          userName = foundUser.name;
+          userObj = foundUser;
+        }
+      }
+
+      if (!userName) userName = 'User';
 
       // Deduplication Guard: Skip if alert for this slot was already sent today (unless Manual Trigger)
       if (slotLabel !== 'Manual Trigger' && reminder.executionHistory?.length) {
