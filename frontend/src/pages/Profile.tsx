@@ -105,7 +105,7 @@ export const Profile: React.FC = () => {
       { name: 'Receive Compliance Email Alerts', allowed: true },
       { name: 'Schedule Compliance Meetings', allowed: isManager },
       { name: 'Audit & System Activity Logs', allowed: isAdmin },
-      { name: 'User Directory & Clearance Management', allowed: isAdmin },
+      { name: 'User Directory & Clearance Management', allowed: isSuper },
       { name: 'System Core Settings & SMTP Control', allowed: isSuper },
     ];
   };
