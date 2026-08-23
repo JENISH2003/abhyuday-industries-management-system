@@ -427,7 +427,9 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
       return res.status(400).json({ message: 'Please provide your registered email address.' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const targetEmail = email.trim().toLowerCase();
+    const escapedEmail = targetEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const user = await User.findOne({ email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') } });
     if (!user) {
       console.warn(`[FORGOT PASSWORD] Reset requested for email not registered in database: ${email}`);
       // Standard OWASP security pattern (prevents account enumeration & false validation errors)
@@ -480,24 +482,16 @@ export const forgotPassword = async (req: Request, res: Response, next: NextFunc
           <p style="color: #64748b; font-size: 13px; margin-top: 4px;">Password Reset Security Request</p>
         </div>
 
-        <p style="color: #334155; font-size: 14px; line-height: 1.5;">Hello <strong>${user.name}</strong>,</p>
-        <p style="color: #334155; font-size: 14px; line-height: 1.5;">You requested a password reset for your account. Use the following 6-digit OTP verification code:</p>
+        <p style="font-size: 14px; color: #334155; margin-bottom: 16px;">Hello <strong>${user.name}</strong>,</p>
+        <p style="font-size: 14px; color: #334155; margin-bottom: 20px;">You requested a password reset for your account. Your single-use 6-digit verification code is:</p>
 
-        <div style="text-align: center; margin: 28px 0;">
-          <span style="display: inline-block; font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #1e293b; background-color: #f1f5f9; padding: 12px 28px; border-radius: 12px; border: 1px solid #cbd5e1;">
+        <div style="text-align: center; margin: 24px 0;">
+          <span style="font-family: monospace; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #2563eb; background-color: #eff6ff; padding: 12px 28px; border-radius: 12px; border: 1px border #bfdbfe; display: inline-block;">
             ${otpCode}
           </span>
         </div>
 
-        <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
-          <p style="margin: 0; color: #991b1b; font-size: 12px;"><strong>⚠️ Security Rules:</strong></p>
-          <ul style="margin: 4px 0 0 18px; padding: 0; color: #991b1b; font-size: 12px;">
-            <li>OTP expires in <strong>10 minutes</strong>.</li>
-            <li>Maximum <strong>5 attempts</strong> allowed.</li>
-            <li>Do not share this code with anyone.</li>
-          </ul>
-        </div>
-
+        <p style="font-size: 12px; color: #64748b; text-align: center; margin-bottom: 20px;">This code is valid for <strong>10 minutes</strong>. Do not share this code with anyone.</p>
         <p style="color: #94a3b8; font-size: 11px; text-align: center;">If you did not request this reset, you can safely ignore this email.</p>
       </div>
     `;
@@ -528,7 +522,9 @@ export const verifyOtp = async (req: Request, res: Response, next: NextFunction)
       return res.status(400).json({ message: 'Email and 6-digit OTP are required.' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const targetEmail = email.trim().toLowerCase();
+    const escapedEmail = targetEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const user = await User.findOne({ email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') } });
     if (!user || !user.resetOtp || !user.resetOtpExpires) {
       return res.status(400).json({ message: 'No active OTP request found. Please request a new OTP.' });
     }
@@ -577,7 +573,9 @@ export const resetPasswordWithOtp = async (req: Request, res: Response, next: Ne
       return res.status(400).json({ message: 'New password must be at least 6 characters long.' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    const targetEmail = email.trim().toLowerCase();
+    const escapedEmail = targetEmail.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const user = await User.findOne({ email: { $regex: new RegExp(`^${escapedEmail}$`, 'i') } });
     if (!user || !user.resetOtp || !user.resetOtpExpires) {
       return res.status(400).json({ message: 'No active OTP session found. Please request a new OTP.' });
     }
