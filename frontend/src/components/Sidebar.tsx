@@ -92,6 +92,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
               <NavLink
                 key={item.to}
                 to={item.to}
+                onClick={() => {
+                  if (typeof window !== 'undefined' && window.innerWidth < 768 && onClose) {
+                    onClose();
+                  }
+                }}
                 className={({ isActive }) => `
                   flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
                   ${isActive ? 'bg-brand text-white shadow-soft font-semibold' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-100'}

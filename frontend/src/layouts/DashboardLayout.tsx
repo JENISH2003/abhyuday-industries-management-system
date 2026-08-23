@@ -7,7 +7,7 @@ import { RootState } from '../store';
 
 export const DashboardLayout: React.FC = () => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
