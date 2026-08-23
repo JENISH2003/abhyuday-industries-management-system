@@ -7,16 +7,25 @@ import ActivityLog from '../models/ActivityLog';
 import EmailLog from '../models/EmailLog';
 
 export const initScheduler = (): void => {
-  console.log('[SCHEDULER] Initializing background cron jobs...');
+  console.log('[SCHEDULER] Initializing background cron jobs (Daily 9:00 AM & 2:00 PM dispatch)...');
 
-  // Run certificate compliance & stability checks every day at midnight (00:00)
-  cron.schedule('0 0 * * *', async () => {
-    console.log('[SCHEDULER] Triggering daily certificate compliance & stability checks...');
+  // Daily 9:00 AM Master Email Dispatch: Certificates, Stability, Personal Reminders, & Morning Meetings
+  cron.schedule('0 9 * * *', async () => {
+    console.log('[SCHEDULER 09:00 AM] Triggering daily morning email notifications...');
     await checkCertificatesCompliance();
     await checkStabilityCompliance();
+    await checkPersonalReminders('09:00 AM');
+    await checkMeetingReminders();
   });
 
-  // Run daily 1-day log purge at 01:00 AM to keep 512MB database space optimized for life
+  // Daily 2:00 PM Afternoon Email Dispatch: Personal Reminders & Afternoon Meetings
+  cron.schedule('0 14 * * *', async () => {
+    console.log('[SCHEDULER 02:00 PM] Triggering daily afternoon email notifications...');
+    await checkPersonalReminders('02:00 PM');
+    await checkMeetingReminders();
+  });
+
+  // Run daily 1-day log purge at 01:00 AM to keep database space optimized
   cron.schedule('0 1 * * *', async () => {
     try {
       console.log('[SCHEDULER] Running daily 1-day activity & email log purge...');
@@ -39,27 +48,16 @@ export const initScheduler = (): void => {
     }
   });
 
-  // Run Personal Reminders 2 times daily: 9:00 AM & 2:00 PM
-  cron.schedule('0 9 * * *', async () => {
-    console.log('[SCHEDULER] Triggering 9:00 AM Personal Reminders check...');
-    await checkPersonalReminders('09:00 AM');
-  });
-
-  cron.schedule('0 14 * * *', async () => {
-    console.log('[SCHEDULER] Triggering 2:00 PM Personal Reminders check...');
-    await checkPersonalReminders('02:00 PM');
-  });
-
-  // Run meeting reminder checks every minute for 2-time notifications (morning & mentioned time)
+  // Per-minute check for exact meeting scheduled time alerts
   cron.schedule('* * * * *', async () => {
     await checkMeetingReminders();
   });
 
-  // Run once immediately on server startup for demonstration/sync purposes
+  // Run once on server startup for sync
   setTimeout(async () => {
     console.log('[SCHEDULER] Running initial startup compliance, meeting, & stability checks...');
     await checkCertificatesCompliance();
     await checkMeetingReminders();
     await checkStabilityCompliance();
-  }, 5000); // Wait 5 seconds after server start to allow DB/mailer setup
+  }, 5000);
 };
