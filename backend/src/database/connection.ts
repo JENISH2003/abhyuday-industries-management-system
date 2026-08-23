@@ -11,6 +11,12 @@ export const connectDB = async (): Promise<void> => {
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
 
+    // Drop legacy/obsolete index on refreshtokens collection to prevent E11000 token_1 duplicate key error
+    try {
+      await mongoose.connection.collection('refreshtokens').dropIndex('token_1');
+      console.log('[DB INDEX FIX] Dropped legacy refreshtokens token_1 index successfully.');
+    } catch (indexErr) {}
+
     // Run seeding
     await seedSuperAdmin();
     await seedCategoriesAndSubcategories();
