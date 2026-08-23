@@ -23,7 +23,12 @@ export const getStabilityRecords = async (
   next: NextFunction
 ) => {
   try {
-    const records = await StabilityRecord.find()
+    const query: any = {};
+    if (req.user?.role !== 'super_admin') {
+      query.createdBy = req.user?.id;
+    }
+
+    const records = await StabilityRecord.find(query)
       .populate('createdBy', 'name email role')
       .populate('history.completedBy', 'name email role')
       .sort({ updatedAt: -1 });
@@ -108,6 +113,10 @@ export const completeStabilityInterval = async (
     const record = await StabilityRecord.findById(id);
     if (!record) {
       return res.status(404).json({ message: 'Stability study record not found' });
+    }
+
+    if (req.user?.role !== 'super_admin' && record.createdBy.toString() !== req.user?.id) {
+      return res.status(403).json({ message: 'Access denied: You can only modify your own stability records.' });
     }
 
     if (record.status === 'completed') {

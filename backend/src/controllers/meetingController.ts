@@ -79,7 +79,15 @@ export const getMeetings = async (
   next: NextFunction
 ) => {
   try {
-    const meetings = await Meeting.find()
+    const query: any = {};
+    if (req.user?.role !== 'super_admin') {
+      query.$or = [
+        { createdBy: req.user?.id },
+        { attendees: req.user?.id },
+      ];
+    }
+
+    const meetings = await Meeting.find(query)
       .populate('attendees', 'name email role')
       .populate('createdBy', 'name email')
       .populate('category', 'name color icon')
