@@ -14,7 +14,6 @@ import { ForgotPassword } from './pages/ForgotPassword';
 // Dashboard Layout Pages
 import { Dashboard } from './pages/Dashboard';
 import { Certificates } from './pages/Certificates';
-import { ExpiringSoon } from './pages/ExpiringSoon';
 import { Meetings } from './pages/Meetings';
 import { Logs } from './pages/Logs';
 import { UsersList } from './pages/Users';
