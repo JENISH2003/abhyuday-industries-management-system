@@ -1,0 +1,321 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 224 71.4% 4.1%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 221.2 83.2% 53.3%;
+  }
+
+  .dark {
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+
+    --card: 224 71.4% 8%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-size: 14px;
+    letter-spacing: -0.011em;
+  }
+
+  /* Universal Dropdown & Select Option Visibility */
+  select option {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    font-weight: 500;
+    padding: 6px 12px;
+  }
+
+  .dark select option {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+  }
+
+  /* High contrast input placeholder fallback */
+  ::placeholder {
+    opacity: 0.75;
+  }
+}
+
+/* Core Brand Colors Fallback Utilities */
+.bg-brand {
+  background-color: #00c853 !important;
+}
+.bg-brand-dark {
+  background-color: #00a844 !important;
+}
+.text-brand {
+  color: #00c853 !important;
+}
+.border-brand {
+  border-color: #00c853 !important;
+}
+
+/* Custom Scrollbar for Notion/Airtable look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.dark .glass {
+  background: rgba(15, 23, 42, 0.7);
+}
+
+/* ── Auth pages (login / register / forgot) ── */
+.auth-stage {
+  font-family: "Outfit", "Inter", sans-serif;
+  background:
+    radial-gradient(
+      ellipse 80% 60% at 10% 20%,
+      rgba(0, 200, 83, 0.18),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 90% 80%,
+      rgba(22, 163, 74, 0.14),
+      transparent 50%
+    ),
+    linear-gradient(145deg, #1a1f1c 0%, #0f1412 45%, #1c2420 100%);
+}
+
+.auth-bg-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.auth-bg-orb--tl {
+  top: -8%;
+  left: -6%;
+  width: 280px;
+  height: 280px;
+  background: rgba(0, 200, 83, 0.22);
+  animation: auth-pulse 7s ease-in-out infinite;
+}
+
+.auth-bg-orb--br {
+  bottom: -10%;
+  right: -4%;
+  width: 320px;
+  height: 320px;
+  background: rgba(34, 197, 94, 0.16);
+  animation: auth-pulse 9s ease-in-out infinite reverse;
+}
+
+.auth-dash-line {
+  position: absolute;
+  border: 1.5px dashed rgba(74, 222, 128, 0.28);
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+.auth-dash-line--1 {
+  width: 180px;
+  height: 180px;
+  top: 12%;
+  right: 8%;
+  animation: auth-spin 28s linear infinite;
+}
+
+.auth-dash-line--2 {
+  width: 120px;
+  height: 120px;
+  bottom: 14%;
+  left: 6%;
+  animation: auth-spin 36s linear infinite reverse;
+}
+
+.auth-visual {
+  background: linear-gradient(165deg, #00c853 0%, #00a844 42%, #15803d 100%);
+}
+
+.auth-curve {
+  position: absolute;
+  inset: -20% -30% auto auto;
+  width: 140%;
+  height: 120%;
+  background: radial-gradient(
+    ellipse at 30% 40%,
+    rgba(255, 255, 255, 0.18),
+    transparent 55%
+  );
+  border-radius: 50%;
+  transform: rotate(-18deg);
+}
+
+.auth-curve-soft {
+  position: absolute;
+  left: -25%;
+  bottom: -35%;
+  width: 90%;
+  height: 80%;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+}
+
+.auth-float {
+  animation: auth-float 5.5s ease-in-out infinite;
+}
+
+.auth-drift {
+  animation: auth-drift 6s ease-in-out infinite;
+}
+
+.auth-drift-delayed {
+  animation: auth-drift 7.5s ease-in-out infinite reverse;
+}
+
+.auth-logo-enter,
+.auth-form-enter {
+  animation: auth-rise 0.55s ease-out both;
+}
+
+.auth-cta {
+  box-shadow: 0 10px 24px -8px rgba(0, 200, 83, 0.55);
+}
+
+.auth-cta:hover:not(:disabled) {
+  box-shadow: 0 14px 28px -8px rgba(0, 200, 83, 0.65);
+}
+
+@keyframes auth-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes auth-drift {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}
+
+@keyframes auth-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes auth-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes auth-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 1023px) {
+  .auth-visual {
+    border-radius: 0;
+  }
+
+  .auth-shell {
+    border-radius: 22px;
+  }
+}
