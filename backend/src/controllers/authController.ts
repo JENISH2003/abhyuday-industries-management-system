@@ -57,7 +57,8 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
   try {
     const validatedBody = LoginValidator.parse(req.body);
 
-    const user = await User.findOne({ email: validatedBody.email });
+    const targetEmail = validatedBody.email.trim().toLowerCase();
+    const user = await User.findOne({ email: targetEmail });
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
