@@ -55,9 +55,14 @@ export const checkPersonalReminders = async (
       }
 
       let emailSent = false;
+      let statusDetail = '';
 
       // 1. Send Email Notification if enabled
-      if (reminder.notifyEmail && recipientEmail) {
+      if (!reminder.notifyEmail) {
+        statusDetail = 'Email notification option is disabled for this reminder';
+      } else if (!recipientEmail) {
+        statusDetail = 'Recipient user email is missing';
+      } else {
         const subject = `🔔 Personal Reminder: ${reminder.title} (${slotLabel})`;
         const html = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
@@ -86,8 +91,12 @@ export const checkPersonalReminders = async (
         try {
           const sent = await sendMail(recipientEmail, subject, 'bulk_summary', html);
           emailSent = sent;
+          statusDetail = sent
+            ? `Email sent to ${recipientEmail}`
+            : `Email sending returned false (Check Email Settings & App Password)`;
         } catch (err: any) {
           console.error(`[PERSONAL REMINDERS] Email delivery failed for ${recipientEmail}: ${err.message}`);
+          statusDetail = `Email failed: ${err.message}`;
         }
       }
 
@@ -110,7 +119,7 @@ export const checkPersonalReminders = async (
         triggeredAt: new Date(),
         slot: slotLabel,
         status: emailSent ? 'sent' : 'skipped',
-        details: emailSent ? `Email sent to ${recipientEmail}` : `Processed (${slotLabel})`,
+        details: statusDetail,
       });
 
       // Auto-complete ONLY after the end date has fully passed
