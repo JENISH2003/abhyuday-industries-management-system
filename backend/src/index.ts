@@ -87,29 +87,8 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
-// Mount uploads as static resource
-app.use('/uploads', express.static(uploadsDir));
-
-// Audit Logger Middleware for mutating states
-app.use(auditLogger);
-
-// API routes mounting
-app.use('/api/auth', authRoutes);
-app.use('/api/certificates', certificateRoutes);
-app.use('/api/meetings', meetingRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/logs', logRoutes);
-app.use('/api/db', backupRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/subcategories', subcategoryRoutes);
-app.use('/api/settings/email', emailSettingRoutes);
-app.use('/api/stability', stabilityRoutes);
-app.use('/api/settings/cleanup', cleanupRoutes);
-app.use('/api/cron', cronRoutes);
-app.use('/api/personal-reminders', personalReminderRoutes);
-
 // Direct fail-safe API trigger endpoint for GitHub Actions
-app.all(['/api/cron/dispatch', '/api/cron-dispatch'], async (req, res) => {
+app.all('/api/cron/dispatch', async (req: express.Request, res: express.Response) => {
   try {
     const providedSecret = req.headers['x-cron-secret'] || req.query.secret;
     const expectedSecret = config.CRON_SECRET;
@@ -149,6 +128,24 @@ app.all(['/api/cron/dispatch', '/api/cron-dispatch'], async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to execute cron email dispatch', error: error.message });
   }
 });
+
+// Audit Logger Middleware for mutating states
+app.use(auditLogger);
+
+// API routes mounting
+app.use('/api/auth', authRoutes);
+app.use('/api/certificates', certificateRoutes);
+app.use('/api/meetings', meetingRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/logs', logRoutes);
+app.use('/api/db', backupRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/subcategories', subcategoryRoutes);
+app.use('/api/settings/email', emailSettingRoutes);
+app.use('/api/stability', stabilityRoutes);
+app.use('/api/settings/cleanup', cleanupRoutes);
+app.use('/api/cron', cronRoutes);
+app.use('/api/personal-reminders', personalReminderRoutes);
 
 // Health check endpoint (supports both /health and /api/health)
 app.get(['/health', '/api/health'], (req, res) => {
