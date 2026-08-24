@@ -114,16 +114,39 @@ app.get(['/health', '/api/health'], (req, res) => {
 });
 
 // Serve frontend static build assets if dist directory exists (Single Fullstack Service mode)
-const frontendDistPath = path.resolve(__dirname, '../../frontend/dist');
-if (fs.existsSync(frontendDistPath)) {
+const possibleFrontendPaths = [
+  path.resolve(__dirname, '../../frontend/dist'),
+  path.resolve(__dirname, '../frontend/dist'),
+  path.resolve(process.cwd(), 'frontend/dist'),
+  path.resolve(process.cwd(), '../frontend/dist'),
+];
+
+const frontendDistPath = possibleFrontendPaths.find((p) => fs.existsSync(p));
+
+if (frontendDistPath) {
   console.log(`[SERVE] Serving production static frontend build from: ${frontendDistPath}`);
   app.use(express.static(frontendDistPath));
 
   app.get('*', (req, res, next) => {
-    if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/uploads') || req.originalUrl === '/health') {
+    if (
+      req.originalUrl.startsWith('/api') ||
+      req.originalUrl.startsWith('/uploads') ||
+      req.originalUrl === '/health' ||
+      req.originalUrl === '/api/health'
+    ) {
       return next();
     }
     res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+} else {
+  console.warn('[SERVE] WARNING: Frontend dist directory not found. Serving fallback API status for root /');
+  app.get('/', (req, res) => {
+    res.status(200).json({
+      name: 'Abhyuday Management System API',
+      status: 'Online',
+      timestamp: new Date(),
+      message: 'Backend server is running successfully.',
+    });
   });
 }
 
