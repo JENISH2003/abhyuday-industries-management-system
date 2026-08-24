@@ -108,6 +108,48 @@ app.use('/api/settings/cleanup', cleanupRoutes);
 app.use('/api/cron', cronRoutes);
 app.use('/api/personal-reminders', personalReminderRoutes);
 
+// Direct fail-safe API trigger endpoint for GitHub Actions
+app.all(['/api/cron/dispatch', '/api/cron-dispatch'], async (req, res) => {
+  try {
+    const providedSecret = req.headers['x-cron-secret'] || req.query.secret;
+    const expectedSecret = config.CRON_SECRET;
+
+    if (expectedSecret && providedSecret !== expectedSecret) {
+      res.status(401).json({ success: false, message: 'Unauthorized: Invalid cron secret token' });
+      return;
+    }
+
+    const slot = (req.query.slot as string) || (req.body?.slot as string) || '09:00 AM';
+    console.log(`[CRON DIRECT API TRIGGER] Received trigger for slot: ${slot}`);
+
+    const { checkCertificatesCompliance } = await import('./services/complianceService');
+    const { checkMeetingReminders } = await import('./services/meetingReminderService');
+    const { checkStabilityCompliance } = await import('./services/stabilityService');
+    const { checkPersonalReminders } = await import('./services/personalReminderService');
+
+    if (slot === '09:00 AM' || slot === 'morning' || slot === 'all') {
+      await checkCertificatesCompliance();
+      await checkStabilityCompliance();
+      await checkPersonalReminders('09:00 AM');
+      await checkMeetingReminders();
+    } else if (slot === '02:00 PM' || slot === 'afternoon') {
+      await checkPersonalReminders('02:00 PM');
+      await checkMeetingReminders();
+    } else {
+      await checkMeetingReminders();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Cron email dispatch triggered successfully for slot: ${slot}`,
+      executedAt: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    console.error('[CRON DIRECT TRIGGER ERROR]', error);
+    res.status(500).json({ success: false, message: 'Failed to execute cron email dispatch', error: error.message });
+  }
+});
+
 // Health check endpoint (supports both /health and /api/health)
 app.get(['/health', '/api/health'], (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date(), env: config.NODE_ENV });
