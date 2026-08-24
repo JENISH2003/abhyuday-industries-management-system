@@ -25,6 +25,7 @@ import emailSettingRoutes from './routes/emailSettingRoutes';
 import stabilityRoutes from './routes/stabilityRoutes';
 import cleanupRoutes from './routes/cleanupRoutes';
 import personalReminderRoutes from './routes/personalReminderRoutes';
+import cronRoutes from './routes/cronRoutes';
 
 import fs from 'fs';
 
@@ -104,10 +105,11 @@ app.use('/api/subcategories', subcategoryRoutes);
 app.use('/api/settings/email', emailSettingRoutes);
 app.use('/api/stability', stabilityRoutes);
 app.use('/api/settings/cleanup', cleanupRoutes);
+app.use('/api/cron', cronRoutes);
 app.use('/api/personal-reminders', personalReminderRoutes);
 
-// Health check endpoint
-app.get('/health', (req, res) => {
+// Health check endpoint (supports both /health and /api/health)
+app.get(['/health', '/api/health'], (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date(), env: config.NODE_ENV });
 });
 

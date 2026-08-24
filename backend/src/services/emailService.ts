@@ -4,39 +4,59 @@ import EmailLog from '../models/EmailLog';
 import EmailSetting from '../models/EmailSetting';
 
 export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer.Transporter; from: string }> => {
+  // Check if active custom SMTP configuration exists in database
   const dbSetting = await EmailSetting.findOne().sort({ updatedAt: -1 });
 
-  const host = dbSetting?.smtpHost || config.SMTP_HOST || 'smtp.gmail.com';
-  const port = Number(dbSetting?.smtpPort || config.SMTP_PORT || 465);
-  const user = dbSetting?.smtpUser || config.SMTP_USER;
-  let pass = dbSetting?.smtpPass || config.SMTP_PASS;
-
-  // Handle masked or missing password fallback to environment config
-  if (!pass || pass === '********') {
-    pass = config.SMTP_PASS;
-  }
-
-  if (user && pass && user !== 'mock_user') {
+  if (dbSetting && dbSetting.smtpUser && dbSetting.smtpPass) {
+    const port = dbSetting.smtpPort || 465;
     const transporter = nodemailer.createTransport({
-      host,
+      host: dbSetting.smtpHost || 'smtp.gmail.com',
       port,
       secure: port === 465,
-      auth: { user, pass },
-      connectionTimeout: 8000,
-      greetingTimeout: 8000,
-      socketTimeout: 10000,
+      auth: {
+        user: dbSetting.smtpUser,
+        pass: dbSetting.smtpPass,
+      },
     });
 
-    const fromName = dbSetting?.fromName || 'Abhyuday Management System';
-    const fromEmail = dbSetting?.fromEmail || user;
+    const fromName = dbSetting.fromName || 'Abhyuday Management System';
+    const fromEmail = dbSetting.fromEmail || dbSetting.smtpUser;
     const from = `"${fromName}" <${fromEmail}>`;
 
     return { transporter, from };
   }
 
-  // Fast instant fallback without external network API calls
-  const transporter = nodemailer.createTransport({ jsonTransport: true });
-  return { transporter, from: config.SMTP_FROM || '"Abhyuday Management" <noreply@abhyuday.com>' };
+  // Fallback to environment variables or Ethereal / mock
+  if (config.SMTP_USER === 'mock_user' || !config.SMTP_USER) {
+    try {
+      const testAccount = await nodemailer.createTestAccount();
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass,
+        },
+      });
+      return { transporter, from: `"Abhyuday Demo" <${testAccount.user}>` };
+    } catch (err: any) {
+      const transporter = nodemailer.createTransport({ jsonTransport: true });
+      return { transporter, from: config.SMTP_FROM };
+    }
+  } else {
+    const port = config.SMTP_PORT || 465;
+    const transporter = nodemailer.createTransport({
+      host: config.SMTP_HOST,
+      port,
+      secure: port === 465,
+      auth: {
+        user: config.SMTP_USER,
+        pass: config.SMTP_PASS,
+      },
+    });
+    return { transporter, from: config.SMTP_FROM };
+  }
 };
 
 export const sendMail = async (

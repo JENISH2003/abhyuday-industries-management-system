@@ -1,6 +1,5 @@
 import PersonalReminder from '../models/PersonalReminder';
 import ActivityLog from '../models/ActivityLog';
-import User from '../models/User';
 import { sendMail } from './emailService';
 
 export const checkPersonalReminders = async (
@@ -34,23 +33,9 @@ export const checkPersonalReminders = async (
     console.log(`[PERSONAL REMINDERS] Firing check (${slotLabel}). Found ${activeReminders.length} reminder(s).`);
 
     for (const reminder of activeReminders) {
-      let userObj: any = reminder.user;
-      let recipientEmail = userObj?.email;
-      let userName = userObj?.name;
-
-      if (!recipientEmail && reminder.user) {
-        const foundUser = await User.findById(reminder.user);
-        if (foundUser) {
-          recipientEmail = foundUser.email;
-          userName = foundUser.name;
-        }
-      }
-
-      if (!recipientEmail) {
-        recipientEmail = process.env.SUPERADMIN_EMAIL || 'jenishkpatel2003@gmail.com';
-      }
-
-      if (!userName) userName = 'User';
+      const userObj: any = reminder.user;
+      const recipientEmail = userObj?.email;
+      const userName = userObj?.name || 'User';
 
       // Deduplication Guard: Skip if alert for this slot was already sent today (unless Manual Trigger)
       if (slotLabel !== 'Manual Trigger' && reminder.executionHistory?.length) {
@@ -69,37 +54,41 @@ export const checkPersonalReminders = async (
         }
       }
 
-      // 1. Send Email Notification
-      const subject = `🔔 Personal Reminder: ${reminder.title} (${slotLabel})`;
-      const html = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
-          <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #00c853; padding-bottom: 12px;">
-            <h2 style="color: #00a844; margin: 0; font-size: 22px;">Abhyuday Personal Reminder System</h2>
-            <p style="color: #64748b; font-size: 13px; margin-top: 4px;">Automated Alert • ${slotLabel}</p>
-          </div>
-
-          <p style="color: #334155; font-size: 15px;">Hello <strong>${userName}</strong>,</p>
-          <p style="color: #334155; font-size: 14px;">This is your personal reminder alert:</p>
-
-          <div style="background-color: #f0fdf4; border-left: 4px solid #16a34a; padding: 16px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="margin: 0 0 8px 0; color: #166534; font-size: 18px;">${reminder.title}</h3>
-            ${reminder.description ? `<p style="margin: 0; color: #15803d; font-size: 14px; line-height: 1.5;">${reminder.description}</p>` : ''}
-            <div style="margin-top: 12px; font-size: 12px; color: #166534;">
-              <span>🗓️ Valid: <strong>${new Date(reminder.startDate).toLocaleDateString()}</strong> to <strong>${new Date(reminder.endDate).toLocaleDateString()}</strong></span>
-            </div>
-          </div>
-
-          <p style="color: #94a3b8; font-size: 11px; text-align: center; margin-top: 24px;">
-            You are receiving this automated alert because you scheduled a personal reminder in Abhyuday Management System.
-          </p>
-        </div>
-      `;
-
       let emailSent = false;
-      try {
-        emailSent = await sendMail(recipientEmail, subject, 'bulk_summary', html);
-      } catch (err: any) {
-        console.error(`[PERSONAL REMINDERS] Email delivery failed for ${recipientEmail}: ${err.message}`);
+
+      // 1. Send Email Notification if enabled
+      if (reminder.notifyEmail && recipientEmail) {
+        const subject = `🔔 Personal Reminder: ${reminder.title} (${slotLabel})`;
+        const html = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+            <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #00c853; padding-bottom: 12px;">
+              <h2 style="color: #00a844; margin: 0; font-size: 22px;">Abhyuday Personal Reminder System</h2>
+              <p style="color: #64748b; font-size: 13px; margin-top: 4px;">Automated Alert • ${slotLabel}</p>
+            </div>
+
+            <p style="color: #334155; font-size: 15px;">Hello <strong>${userName}</strong>,</p>
+            <p style="color: #334155; font-size: 14px;">This is your scheduled personal reminder:</p>
+
+            <div style="background-color: #f0fdf4; border-left: 4px solid #16a34a; padding: 16px; border-radius: 8px; margin: 20px 0;">
+              <h3 style="margin: 0 0 8px 0; color: #166534; font-size: 18px;">${reminder.title}</h3>
+              ${reminder.description ? `<p style="margin: 0; color: #15803d; font-size: 14px; line-height: 1.5;">${reminder.description}</p>` : ''}
+              <div style="margin-top: 12px; font-size: 12px; color: #166534;">
+                <span>🗓️ Valid: <strong>${new Date(reminder.startDate).toLocaleDateString()}</strong> to <strong>${new Date(reminder.endDate).toLocaleDateString()}</strong></span>
+              </div>
+            </div>
+
+            <p style="color: #94a3b8; font-size: 11px; text-align: center; margin-top: 24px;">
+              You are receiving this automated alert because you scheduled a personal reminder in Abhyuday Management System.
+            </p>
+          </div>
+        `;
+
+        try {
+          const sent = await sendMail(recipientEmail, subject, 'bulk_summary', html);
+          emailSent = sent;
+        } catch (err: any) {
+          console.error(`[PERSONAL REMINDERS] Email delivery failed for ${recipientEmail}: ${err.message}`);
+        }
       }
 
       // 2. Audit / Activity Log if enabled
@@ -109,19 +98,19 @@ export const checkPersonalReminders = async (
           userName: userName,
           module: 'System',
           action: 'Personal Reminder Triggered',
-          details: `Personal reminder "${reminder.title}" executed (${slotLabel}). Email sent to ${recipientEmail}.`,
+          details: `Personal reminder "${reminder.title}" executed (${slotLabel}).`,
           ipAddress: '127.0.0.1',
           timestamp: new Date(),
         });
       }
 
-      // 3. Record Execution Log (Always 'sent' badge)
+      // 3. Record Execution Log
       reminder.lastTriggeredAt = new Date();
       reminder.executionHistory.push({
         triggeredAt: new Date(),
         slot: slotLabel,
-        status: 'sent',
-        details: `Email sent to ${recipientEmail}`,
+        status: emailSent ? 'sent' : 'skipped',
+        details: emailSent ? `Email sent to ${recipientEmail}` : `Processed (${slotLabel})`,
       });
 
       // Auto-complete ONLY after the end date has fully passed

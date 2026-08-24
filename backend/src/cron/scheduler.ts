@@ -10,20 +10,28 @@ export const initScheduler = (): void => {
   console.log('[SCHEDULER] Initializing background cron jobs (Daily 9:00 AM & 2:00 PM dispatch)...');
 
   // Daily 9:00 AM Master Email Dispatch: Certificates, Stability, Personal Reminders, & Morning Meetings
-  cron.schedule('0 9 * * *', async () => {
-    console.log('[SCHEDULER 09:00 AM] Triggering daily morning email notifications...');
-    await checkCertificatesCompliance();
-    await checkStabilityCompliance();
-    await checkPersonalReminders('09:00 AM');
-    await checkMeetingReminders();
-  });
+  cron.schedule(
+    '0 9 * * *',
+    async () => {
+      console.log('[SCHEDULER 09:00 AM IST] Triggering daily morning email notifications...');
+      await checkCertificatesCompliance();
+      await checkStabilityCompliance();
+      await checkPersonalReminders('09:00 AM');
+      await checkMeetingReminders();
+    },
+    { timezone: 'Asia/Kolkata' }
+  );
 
   // Daily 2:00 PM Afternoon Email Dispatch: Personal Reminders & Afternoon Meetings
-  cron.schedule('0 14 * * *', async () => {
-    console.log('[SCHEDULER 02:00 PM] Triggering daily afternoon email notifications...');
-    await checkPersonalReminders('02:00 PM');
-    await checkMeetingReminders();
-  });
+  cron.schedule(
+    '0 14 * * *',
+    async () => {
+      console.log('[SCHEDULER 02:00 PM IST] Triggering daily afternoon email notifications...');
+      await checkPersonalReminders('02:00 PM');
+      await checkMeetingReminders();
+    },
+    { timezone: 'Asia/Kolkata' }
+  );
 
   // Run daily 1-day log purge at 01:00 AM to keep database space optimized
   cron.schedule('0 1 * * *', async () => {
