@@ -17,18 +17,18 @@ jobs:
       - name: Ping Live Render Website & Wake Up
         run: |
           echo "Pinging health endpoint to ensure server is awake..."
-          curl -s https://abhyuday-management-system.onrender.com/health || echo "Ping attempted"
+          curl -s https://abhyuday-industries-management-system.onrender.com/health || echo "Ping attempted"
 
       - name: Trigger Daily Morning Email Dispatch (09:00 AM IST)
         if: github.event.schedule == '30 3 * * *' || github.event_name == 'workflow_dispatch'
         run: |
           echo "Triggering 09:00 AM IST Morning Email Dispatch via API..."
-          curl -s -X POST "https://abhyuday-management-system.onrender.com/api/cron/dispatch?slot=09:00%20AM" \
+          curl -s -X POST "https://abhyuday-industries-management-system.onrender.com/api/cron/dispatch?slot=09:00%20AM" \
             -H "x-cron-secret: abhyuday_cron_secret_key_2026" || echo "Dispatch attempt finished"
 
       - name: Trigger Daily Afternoon Email Dispatch (02:00 PM IST)
         if: github.event.schedule == '30 8 * * *'
         run: |
           echo "Triggering 02:00 PM IST Afternoon Email Dispatch via API..."
-          curl -s -X POST "https://abhyuday-management-system.onrender.com/api/cron/dispatch?slot=02:00%20PM" \
+          curl -s -X POST "https://abhyuday-industries-management-system.onrender.com/api/cron/dispatch?slot=02:00%20PM" \
             -H "x-cron-secret: abhyuday_cron_secret_key_2026" || echo "Dispatch attempt finished"
