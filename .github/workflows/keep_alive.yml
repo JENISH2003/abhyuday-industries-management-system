@@ -6,8 +6,8 @@ on:
     - cron: '30 3 * * *'
     # 02:00 PM IST (08:30 AM UTC) - Afternoon Email Dispatch
     - cron: '30 8 * * *'
-    # Runs every 14 minutes 24/7 to keep Render web service awake
-    - cron: '*/14 * * * *'
+    # Runs every 5 minutes 24/7 to keep Render web service awake and prevent cold starts
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
