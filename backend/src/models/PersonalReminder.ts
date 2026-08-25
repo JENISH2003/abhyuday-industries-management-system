@@ -13,6 +13,11 @@ const PersonalReminderSchema: Schema<IPersonalReminder> = new Schema(
       default: '',
       trim: true,
     },
+    recipientEmail: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     startDate: {
       type: Date,
       required: [true, 'Start date is required'],

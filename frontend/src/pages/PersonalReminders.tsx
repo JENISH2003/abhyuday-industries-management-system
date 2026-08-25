@@ -30,6 +30,7 @@ interface PersonalReminderItem {
   _id: string;
   title: string;
   description?: string;
+  recipientEmail?: string;
   startDate: string;
   endDate: string;
   preferredTime: string;
@@ -63,6 +64,7 @@ export const PersonalReminders: React.FC = () => {
     id: '',
     title: '',
     description: '',
+    recipientEmail: '',
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     preferredTime: '09:00 AM, 02:00 PM',
@@ -93,6 +95,7 @@ export const PersonalReminders: React.FC = () => {
       id: '',
       title: '',
       description: '',
+      recipientEmail: '',
       startDate: new Date().toISOString().split('T')[0],
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       preferredTime: '09:00 AM, 02:00 PM',
@@ -109,6 +112,7 @@ export const PersonalReminders: React.FC = () => {
       id: item._id,
       title: item.title,
       description: item.description || '',
+      recipientEmail: item.recipientEmail || '',
       startDate: item.startDate ? new Date(item.startDate).toISOString().split('T')[0] : '',
       endDate: item.endDate ? new Date(item.endDate).toISOString().split('T')[0] : '',
       preferredTime: item.preferredTime || '09:00 AM, 02:00 PM',
@@ -353,6 +357,17 @@ export const PersonalReminders: React.FC = () => {
                       </span>
                       <span className="font-semibold text-emerald-600 dark:text-emerald-400">9:00 AM & 2:00 PM</span>
                     </div>
+
+                    {item.recipientEmail && (
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/60">
+                        <span className="flex items-center gap-1">
+                          <Mail size={13} className="text-blue-500" /> Send To:
+                        </span>
+                        <span className="font-semibold text-blue-600 dark:text-blue-400 truncate max-w-[160px]" title={item.recipientEmail}>
+                          {item.recipientEmail}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -462,6 +477,22 @@ export const PersonalReminders: React.FC = () => {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full bg-background border border-border rounded-xl px-3.5 py-2.5 text-xs text-foreground outline-none focus:border-brand resize-none"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Recipient Email Address (Optional)
+                </label>
+                <input
+                  type="email"
+                  placeholder="e.g. user@example.com (leave blank to send to your account email)"
+                  value={formData.recipientEmail}
+                  onChange={(e) => setFormData({ ...formData, recipientEmail: e.target.value })}
+                  className="w-full bg-background border border-border rounded-xl px-3.5 py-2.5 text-xs text-foreground outline-none focus:border-brand"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Target email where alerts will be sent. If left blank, defaults to your registered email.
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

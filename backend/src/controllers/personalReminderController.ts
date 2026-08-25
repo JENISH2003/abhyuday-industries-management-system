@@ -20,7 +20,7 @@ export const createPersonalReminder = async (req: AuthenticatedRequest, res: Res
   try {
     if (!req.user) return res.status(401).json({ message: 'Unauthenticated' });
 
-    const { title, description, startDate, endDate, preferredTime, notifyEmail, notifySystem } = req.body;
+    const { title, description, recipientEmail, startDate, endDate, preferredTime, notifyEmail, notifySystem } = req.body;
 
     if (!title || !startDate || !endDate) {
       return res.status(400).json({ message: 'Title, Start Date, and End Date are required fields.' });
@@ -40,6 +40,7 @@ export const createPersonalReminder = async (req: AuthenticatedRequest, res: Res
     const newReminder = new PersonalReminder({
       title: title.trim(),
       description: description ? description.trim() : '',
+      recipientEmail: recipientEmail ? recipientEmail.trim() : '',
       startDate: start,
       endDate: end,
       preferredTime: preferredTime || '09:00 AM, 02:00 PM',
@@ -68,7 +69,7 @@ export const updatePersonalReminder = async (req: AuthenticatedRequest, res: Res
     if (!req.user) return res.status(401).json({ message: 'Unauthenticated' });
 
     const { id } = req.params;
-    const { title, description, startDate, endDate, preferredTime, notifyEmail, notifySystem } = req.body;
+    const { title, description, recipientEmail, startDate, endDate, preferredTime, notifyEmail, notifySystem } = req.body;
 
     const reminder = await PersonalReminder.findOne({ _id: id, user: req.user.id });
 
@@ -78,6 +79,7 @@ export const updatePersonalReminder = async (req: AuthenticatedRequest, res: Res
 
     if (title) reminder.title = title.trim();
     if (description !== undefined) reminder.description = description.trim();
+    if (recipientEmail !== undefined) reminder.recipientEmail = recipientEmail.trim();
     if (startDate) reminder.startDate = new Date(startDate);
     if (endDate) reminder.endDate = new Date(endDate);
     if (preferredTime) reminder.preferredTime = preferredTime;

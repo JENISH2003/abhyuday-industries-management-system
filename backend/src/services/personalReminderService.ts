@@ -34,7 +34,7 @@ export const checkPersonalReminders = async (
 
     for (const reminder of activeReminders) {
       const userObj: any = reminder.user;
-      const recipientEmail = userObj?.email;
+      const recipientEmail = reminder.recipientEmail?.trim() || userObj?.email;
       const userName = userObj?.name || 'User';
 
       // TEMPORARILY DISABLED DEDUPLICATION GUARD FOR TESTING (Can be re-enabled upon request)

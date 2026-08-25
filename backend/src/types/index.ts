@@ -161,6 +161,7 @@ export interface IPersonalReminderLog {
 export interface IPersonalReminder extends Document {
   title: string;
   description?: string;
+  recipientEmail?: string;
   startDate: Date;
   endDate: Date;
   preferredTime?: string; // e.g. "09:00, 14:00"
