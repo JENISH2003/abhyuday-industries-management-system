@@ -37,7 +37,8 @@ export const checkPersonalReminders = async (
       const recipientEmail = userObj?.email;
       const userName = userObj?.name || 'User';
 
-      // Deduplication Guard: Skip if alert for this slot was already sent today (unless Manual Trigger)
+      // TEMPORARILY DISABLED DEDUPLICATION GUARD FOR TESTING (Can be re-enabled upon request)
+      /*
       if (slotLabel !== 'Manual Trigger' && reminder.executionHistory?.length) {
         const alreadySentToday = reminder.executionHistory.some((entry: any) => {
           const entryDate = new Date(entry.triggeredAt);
@@ -53,6 +54,7 @@ export const checkPersonalReminders = async (
           continue;
         }
       }
+      */
 
       let emailSent = false;
       let statusDetail = '';

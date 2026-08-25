@@ -155,10 +155,19 @@ export const triggerReminderNow = async (req: AuthenticatedRequest, res: Respons
     await checkPersonalReminders('Manual Trigger', id);
 
     const updated = await PersonalReminder.findById(id);
+    const lastLog = updated?.executionHistory?.[updated.executionHistory.length - 1];
+
+    if (lastLog && lastLog.status === 'skipped') {
+      return res.status(400).json({
+        success: false,
+        message: `Trigger processed, but email was not sent: ${lastLog.details}`,
+        reminder: updated,
+      });
+    }
 
     res.status(200).json({
       success: true,
-      message: 'Reminder triggered successfully! Check execution log and notifications.',
+      message: 'Reminder triggered and email delivered successfully!',
       reminder: updated,
     });
   } catch (error) {

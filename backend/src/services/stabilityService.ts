@@ -43,8 +43,9 @@ export const checkStabilityCompliance = async (): Promise<void> => {
         day: 'numeric',
       });
 
+      // TEMPORARILY DISABLED DEDUPLICATION GUARD FOR TESTING (Can be re-enabled upon request)
       // 1. ONE DAY BEFORE REMINDER
-      if (diffDays === 1 && !record.sentOneDayBefore) {
+      if (diffDays === 1 /* && !record.sentOneDayBefore */) {
         const subject = `[Upcoming Stability Reminder] ${record.currentIntervalLabel} Study for ${record.productName}`;
         const htmlBody = getStabilityEmailTemplate(
           record.productName,
@@ -62,7 +63,7 @@ export const checkStabilityCompliance = async (): Promise<void> => {
       }
 
       // 2. ON DUE DATE REMINDER (or overdue)
-      if (diffDays <= 0 && !record.sentOnDueDate) {
+      if (diffDays <= 0 /* && !record.sentOnDueDate */) {
         const subject = `[Stability Study Due Today] ${record.currentIntervalLabel} Study for ${record.productName}`;
         const htmlBody = getStabilityEmailTemplate(
           record.productName,

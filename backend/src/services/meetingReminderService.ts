@@ -78,10 +78,11 @@ export const checkMeetingReminders = async (): Promise<void> => {
     const currentMinutes = now.getMinutes().toString().padStart(2, '0');
     const currentTimeStr = `${currentHours}:${currentMinutes}`;
 
-    // Get meetings where sendEmail is true and either morning or time email is pending
+    // TEMPORARILY DISABLED DEDUPLICATION GUARD FOR TESTING (Can be re-enabled upon request)
+    // Get meetings where sendEmail is true
     const pendingMeetings = await Meeting.find({
       sendEmail: true,
-      $or: [{ morningEmailSent: false }, { timeEmailSent: false }],
+      // /* $or: [{ morningEmailSent: false }, { timeEmailSent: false }] */
     });
 
     for (const meeting of pendingMeetings) {
@@ -94,8 +95,8 @@ export const checkMeetingReminders = async (): Promise<void> => {
 
       const isPastDay = meetingDate < new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-      // 1. MORNING REMINDER (Runs on the morning of meeting day, e.g. 08:00 AM or any time during the meeting date)
-      if (!meeting.morningEmailSent && (isSameDay || isPastDay)) {
+      // 1. MORNING REMINDER (Runs on the morning of meeting day)
+      if (/* !meeting.morningEmailSent && */ (isSameDay || isPastDay)) {
         const success = await dispatchMeetingNotification(meeting._id.toString(), 'morning');
         if (success) {
           meeting.morningEmailSent = true;
@@ -104,7 +105,7 @@ export const checkMeetingReminders = async (): Promise<void> => {
       }
 
       // 2. MENTIONED TIME REMINDER (Runs when currentTimeStr >= meeting.time on meeting date)
-      if (!meeting.timeEmailSent && (isSameDay || isPastDay)) {
+      if (/* !meeting.timeEmailSent && */ (isSameDay || isPastDay)) {
         let shouldTriggerTimeEmail = false;
 
         if (isSameDay) {

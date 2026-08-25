@@ -57,8 +57,9 @@ export const checkCertificatesCompliance = async (): Promise<void> => {
         milestoneKey = '7'; // Catches certificates entering the 7-day window
       }
 
-      // If no valid milestone or duplicate reminder already sent for this milestone, skip
-      if (!milestoneKey || (cert.sentMilestones && cert.sentMilestones.includes(milestoneKey))) {
+      // TEMPORARILY DISABLED DEDUPLICATION GUARD FOR TESTING (Can be re-enabled upon request)
+      // Original: if (!milestoneKey || (cert.sentMilestones && cert.sentMilestones.includes(milestoneKey))) { continue; }
+      if (!milestoneKey) {
         continue;
       }
 
