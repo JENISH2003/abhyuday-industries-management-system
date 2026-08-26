@@ -1,5 +1,6 @@
 import PersonalReminder from '../models/PersonalReminder';
 import ActivityLog from '../models/ActivityLog';
+import User from '../models/User';
 import { sendMail } from './emailService';
 
 export const checkPersonalReminders = async (

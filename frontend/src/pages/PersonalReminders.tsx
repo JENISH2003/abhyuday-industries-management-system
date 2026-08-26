@@ -178,7 +178,8 @@ export const PersonalReminders: React.FC = () => {
       showNotification(res.data.message || 'Triggered successfully!', 'success');
       fetchReminders();
     } catch (err: any) {
-      showNotification('Failed to trigger reminder', 'error');
+      const msg = err.response?.data?.message || 'Failed to trigger reminder';
+      showNotification(msg, 'error');
     } finally {
       setTriggeringId(null);
     }

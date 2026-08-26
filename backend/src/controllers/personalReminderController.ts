@@ -147,7 +147,11 @@ export const triggerReminderNow = async (req: AuthenticatedRequest, res: Respons
     if (!req.user) return res.status(401).json({ message: 'Unauthenticated' });
 
     const { id } = req.params;
-    const reminder = await PersonalReminder.findOne({ _id: id, user: req.user.id }).populate('user', 'name email');
+    const filter: any = { _id: id };
+    if (req.user.role !== 'super_admin') {
+      filter.user = req.user.id;
+    }
+    const reminder = await PersonalReminder.findOne(filter).populate('user', 'name email');
 
     if (!reminder) {
       return res.status(404).json({ message: 'Personal reminder not found' });
