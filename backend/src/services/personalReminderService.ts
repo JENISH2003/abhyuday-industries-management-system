@@ -124,12 +124,13 @@ export const checkPersonalReminders = async (
         details: statusDetail,
       });
 
-      // Auto-complete ONLY after the end date has fully passed
-      const reminderEndDateEndOfDay = new Date(reminder.endDate);
-      reminderEndDateEndOfDay.setHours(23, 59, 59, 999);
+      // Auto-complete when today is on or past the final end date (after sending today's alert)
+      const reminderEndDateMidnight = new Date(reminder.endDate);
+      reminderEndDateMidnight.setHours(0, 0, 0, 0);
 
-      if (reminderEndDateEndOfDay < today) {
+      if (today >= reminderEndDateMidnight) {
         reminder.status = 'completed';
+        console.log(`[PERSONAL REMINDERS] Reminder "${reminder.title}" reached its end date (${new Date(reminder.endDate).toLocaleDateString()}) and was marked completed.`);
       }
 
       await reminder.save();
