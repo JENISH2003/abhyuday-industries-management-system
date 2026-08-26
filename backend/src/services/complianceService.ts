@@ -63,32 +63,19 @@ export const checkCertificatesCompliance = async (): Promise<void> => {
         continue;
       }
 
-      // Check if certificate belongs to Super Admin
-      const isSuperAdminCert =
-        cert.createdBy &&
-        typeof cert.createdBy === 'object' &&
-        'role' in cert.createdBy &&
-        (cert.createdBy as any).role === 'super_admin';
-
-      let recipientEmails: string[] = [];
-
-      if (isSuperAdminCert) {
-        // SUPER ADMIN RULE: Broadcast reminder to EVERY registered user in the system (including Super Admin)
-        const allActiveUsers = await User.find({ status: 'active' }).select('email');
-        recipientEmails = Array.from(new Set(allActiveUsers.map((u) => u.email).filter(Boolean)));
-        console.log(`[COMPLIANCE WORKER] Super Admin certificate "${cert.name}" alert broadcast to ${recipientEmails.length} users.`);
-      } else {
-        // NORMAL USER RULE: Send reminder email to Owner's registered email AND Super Admin
-        const ownerEmail = cert.createdBy && typeof cert.createdBy === 'object' && 'email' in cert.createdBy
+      // STRICT RECIPIENT RULE: Send reminder email ONLY to the user account that created the certificate
+      const creatorEmail =
+        cert.createdBy && typeof cert.createdBy === 'object' && 'email' in cert.createdBy
           ? (cert.createdBy as any).email
           : null;
-        
-        const superAdmin = await User.findOne({ role: 'super_admin' });
-        const superAdminEmail = superAdmin?.email;
 
-        recipientEmails = Array.from(new Set([ownerEmail, superAdminEmail].filter(Boolean)));
-        console.log(`[COMPLIANCE WORKER] Normal user certificate "${cert.name}" alert sent to Owner (${ownerEmail}) & Super Admin (${superAdminEmail}).`);
+      if (!creatorEmail) {
+        console.log(`[COMPLIANCE WORKER] Skipping certificate "${cert.name}" — creator email not found.`);
+        continue;
       }
+
+      const recipientEmails = [creatorEmail];
+      console.log(`[COMPLIANCE WORKER] Certificate "${cert.name}" alert sent ONLY to creator (${creatorEmail}).`);
 
       if (recipientEmails.length > 0) {
         let subject = `[Abhyuday Alert] Certificate "${cert.name}" Expiry Notice`;
