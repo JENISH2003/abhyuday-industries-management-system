@@ -67,7 +67,7 @@ export const PersonalReminders: React.FC = () => {
     recipientEmail: '',
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    preferredTime: '09:00 AM, 02:00 PM',
+    preferredTime: '09:00 AM',
     notifyEmail: true,
     notifySystem: true,
   });
@@ -98,7 +98,7 @@ export const PersonalReminders: React.FC = () => {
       recipientEmail: '',
       startDate: new Date().toISOString().split('T')[0],
       endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      preferredTime: '09:00 AM, 02:00 PM',
+      preferredTime: '09:00 AM',
       notifyEmail: true,
       notifySystem: true,
     });
@@ -115,7 +115,7 @@ export const PersonalReminders: React.FC = () => {
       recipientEmail: item.recipientEmail || '',
       startDate: item.startDate ? new Date(item.startDate).toISOString().split('T')[0] : '',
       endDate: item.endDate ? new Date(item.endDate).toISOString().split('T')[0] : '',
-      preferredTime: item.preferredTime || '09:00 AM, 02:00 PM',
+      preferredTime: item.preferredTime || '09:00 AM',
       notifyEmail: item.notifyEmail,
       notifySystem: item.notifySystem,
     });
@@ -221,7 +221,7 @@ export const PersonalReminders: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold text-foreground tracking-tight">Personal Reminders</h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Set custom reminders with start/end dates. Checked automatically <strong className="text-foreground">2 times daily at 9:00 AM & 2:00 PM</strong>.
+            Set custom reminders with start/end dates. Checked automatically <strong className="text-foreground">daily at 9:00 AM IST</strong>.
           </p>
         </div>
 
@@ -251,7 +251,7 @@ export const PersonalReminders: React.FC = () => {
             <p className="text-xs font-medium text-muted-foreground">Automated Cron Schedule</p>
             <h3 className="text-sm font-bold text-foreground mt-1.5 flex items-center gap-1.5">
               <Clock size={15} className="text-emerald-500" />
-              <span>9:00 AM & 2:00 PM</span>
+              <span>9:00 AM IST</span>
             </h3>
           </div>
           <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
@@ -355,7 +355,7 @@ export const PersonalReminders: React.FC = () => {
                       <span className="flex items-center gap-1">
                         <Clock size={13} className="text-emerald-500" /> Runs:
                       </span>
-                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">9:00 AM & 2:00 PM</span>
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">9:00 AM IST</span>
                     </div>
 
                     {item.recipientEmail && (
@@ -448,7 +448,7 @@ export const PersonalReminders: React.FC = () => {
               {formData.id ? 'Edit Personal Reminder' : 'Create Personal Reminder'}
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Set start & end dates. System will check 2 times daily at 9:00 AM and 2:00 PM.
+              Set start & end dates. System will check daily at 9:00 AM IST.
             </p>
 
             <form onSubmit={handleSaveReminder} className="mt-5 space-y-4">
@@ -527,7 +527,7 @@ export const PersonalReminders: React.FC = () => {
                 <span className="font-semibold flex items-center gap-1.5">
                   <Clock size={14} /> Cron Checking Schedule:
                 </span>
-                <span className="font-bold">2 Times Daily (9:00 AM & 2:00 PM)</span>
+                <span className="font-bold">Daily at 9:00 AM IST</span>
               </div>
 
               <div className="flex items-center gap-6 pt-2">

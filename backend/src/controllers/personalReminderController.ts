@@ -43,7 +43,7 @@ export const createPersonalReminder = async (req: AuthenticatedRequest, res: Res
       recipientEmail: recipientEmail ? recipientEmail.trim() : '',
       startDate: start,
       endDate: end,
-      preferredTime: preferredTime || '09:00 AM, 02:00 PM',
+      preferredTime: preferredTime || '09:00 AM',
       notifyEmail: notifyEmail !== undefined ? notifyEmail : true,
       notifySystem: notifySystem !== undefined ? notifySystem : true,
       status: 'active',

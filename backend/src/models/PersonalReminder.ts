@@ -30,7 +30,7 @@ const PersonalReminderSchema: Schema<IPersonalReminder> = new Schema(
     },
     preferredTime: {
       type: String,
-      default: '09:00 AM, 02:00 PM',
+      default: '09:00 AM',
       trim: true,
     },
     status: {

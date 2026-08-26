@@ -7,7 +7,7 @@ import ActivityLog from '../models/ActivityLog';
 import EmailLog from '../models/EmailLog';
 
 export const initScheduler = (): void => {
-  console.log('[SCHEDULER] Initializing background cron jobs (Daily 9:00 AM & 2:00 PM dispatch)...');
+  console.log('[SCHEDULER] Initializing background cron jobs (Daily 9:00 AM IST dispatch)...');
 
   // Daily 9:00 AM Master Email Dispatch: Certificates, Stability, Personal Reminders, & Morning Meetings
   cron.schedule(
@@ -17,17 +17,6 @@ export const initScheduler = (): void => {
       await checkCertificatesCompliance();
       await checkStabilityCompliance();
       await checkPersonalReminders('09:00 AM');
-      await checkMeetingReminders();
-    },
-    { timezone: 'Asia/Kolkata' }
-  );
-
-  // Daily 2:00 PM Afternoon Email Dispatch: Personal Reminders & Afternoon Meetings
-  cron.schedule(
-    '0 14 * * *',
-    async () => {
-      console.log('[SCHEDULER 02:00 PM IST] Triggering daily afternoon email notifications...');
-      await checkPersonalReminders('02:00 PM');
       await checkMeetingReminders();
     },
     { timezone: 'Asia/Kolkata' }

@@ -21,16 +21,12 @@ export const dispatchDailyEmails = async (req: Request, res: Response): Promise<
 
     const details: string[] = [];
 
-    if (slot === '09:00 AM' || slot === 'morning' || slot === 'all') {
+    if (slot === '09:00 AM' || slot === 'morning' || slot === 'all' || slot === '02:00 PM' || slot === 'afternoon') {
       await checkCertificatesCompliance();
       await checkStabilityCompliance();
       await checkPersonalReminders('09:00 AM');
       await checkMeetingReminders();
       details.push('Executed 09:00 AM morning compliance & personal reminders');
-    } else if (slot === '02:00 PM' || slot === 'afternoon') {
-      await checkPersonalReminders('02:00 PM');
-      await checkMeetingReminders();
-      details.push('Executed 02:00 PM afternoon personal reminders & meetings');
     } else {
       await checkMeetingReminders();
       details.push('Executed meeting reminders check');

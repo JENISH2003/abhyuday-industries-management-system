@@ -4,8 +4,6 @@ on:
   schedule:
     # 09:00 AM IST (03:30 AM UTC) - Morning Master Email Dispatch
     - cron: '30 3 * * *'
-    # 02:00 PM IST (08:30 AM UTC) - Afternoon Email Dispatch
-    - cron: '30 8 * * *'
     # Runs every 5 minutes 24/7 to keep Render web service awake and prevent cold starts
     - cron: '*/5 * * * *'
   workflow_dispatch:
@@ -24,11 +22,4 @@ jobs:
         run: |
           echo "Triggering 09:00 AM IST Morning Email Dispatch via API..."
           curl -s -X POST "https://abhyuday-industries-management-system.onrender.com/api/cron/dispatch?slot=09:00%20AM" \
-            -H "x-cron-secret: abhyuday_cron_secret_key_2026" || echo "Dispatch attempt finished"
-
-      - name: Trigger Daily Afternoon Email Dispatch (02:00 PM IST)
-        if: github.event.schedule == '30 8 * * *'
-        run: |
-          echo "Triggering 02:00 PM IST Afternoon Email Dispatch via API..."
-          curl -s -X POST "https://abhyuday-industries-management-system.onrender.com/api/cron/dispatch?slot=02:00%20PM" \
             -H "x-cron-secret: abhyuday_cron_secret_key_2026" || echo "Dispatch attempt finished"

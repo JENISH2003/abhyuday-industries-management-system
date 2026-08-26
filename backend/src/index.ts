@@ -106,13 +106,10 @@ app.all('/api/cron/dispatch', async (req: express.Request, res: express.Response
     const { checkStabilityCompliance } = await import('./services/stabilityService');
     const { checkPersonalReminders } = await import('./services/personalReminderService');
 
-    if (slot === '09:00 AM' || slot === 'morning' || slot === 'all') {
+    if (slot === '09:00 AM' || slot === 'morning' || slot === 'all' || slot === '02:00 PM' || slot === 'afternoon') {
       await checkCertificatesCompliance();
       await checkStabilityCompliance();
       await checkPersonalReminders('09:00 AM');
-      await checkMeetingReminders();
-    } else if (slot === '02:00 PM' || slot === 'afternoon') {
-      await checkPersonalReminders('02:00 PM');
       await checkMeetingReminders();
     } else {
       await checkMeetingReminders();
