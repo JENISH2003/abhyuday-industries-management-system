@@ -37,10 +37,12 @@ export const createPersonalReminder = async (req: AuthenticatedRequest, res: Res
       return res.status(400).json({ message: 'End Date cannot be earlier than Start Date.' });
     }
 
+    const finalRecipientEmail = recipientEmail?.trim() || req.user.email || '';
+
     const newReminder = new PersonalReminder({
       title: title.trim(),
       description: description ? description.trim() : '',
-      recipientEmail: recipientEmail ? recipientEmail.trim() : '',
+      recipientEmail: finalRecipientEmail,
       startDate: start,
       endDate: end,
       preferredTime: preferredTime || '09:00 AM',
@@ -71,7 +73,12 @@ export const updatePersonalReminder = async (req: AuthenticatedRequest, res: Res
     const { id } = req.params;
     const { title, description, recipientEmail, startDate, endDate, preferredTime, notifyEmail, notifySystem } = req.body;
 
-    const reminder = await PersonalReminder.findOne({ _id: id, user: req.user.id });
+    const filter: any = { _id: id };
+    if (req.user.role !== 'super_admin') {
+      filter.user = req.user.id;
+    }
+
+    const reminder = await PersonalReminder.findOne(filter);
 
     if (!reminder) {
       return res.status(404).json({ message: 'Personal reminder not found' });
@@ -104,7 +111,12 @@ export const toggleReminderStatus = async (req: AuthenticatedRequest, res: Respo
     if (!req.user) return res.status(401).json({ message: 'Unauthenticated' });
 
     const { id } = req.params;
-    const reminder = await PersonalReminder.findOne({ _id: id, user: req.user.id });
+    const filter: any = { _id: id };
+    if (req.user.role !== 'super_admin') {
+      filter.user = req.user.id;
+    }
+
+    const reminder = await PersonalReminder.findOne(filter);
 
     if (!reminder) {
       return res.status(404).json({ message: 'Personal reminder not found' });
@@ -129,7 +141,12 @@ export const deletePersonalReminder = async (req: AuthenticatedRequest, res: Res
     if (!req.user) return res.status(401).json({ message: 'Unauthenticated' });
 
     const { id } = req.params;
-    const reminder = await PersonalReminder.findOneAndDelete({ _id: id, user: req.user.id });
+    const filter: any = { _id: id };
+    if (req.user.role !== 'super_admin') {
+      filter.user = req.user.id;
+    }
+
+    const reminder = await PersonalReminder.findOneAndDelete(filter);
 
     if (!reminder) {
       return res.status(404).json({ message: 'Personal reminder not found' });

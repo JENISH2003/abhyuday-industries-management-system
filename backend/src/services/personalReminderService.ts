@@ -34,7 +34,12 @@ export const checkPersonalReminders = async (
     console.log(`[PERSONAL REMINDERS] Firing check (${slotLabel}). Found ${activeReminders.length} reminder(s).`);
 
     for (const reminder of activeReminders) {
-      const userObj: any = reminder.user;
+      let userObj: any = reminder.user;
+      if (reminder.user && (!userObj || typeof userObj !== 'object' || !userObj.email)) {
+        const fetchedUser = await User.findById(reminder.user).select('name email');
+        if (fetchedUser) userObj = fetchedUser;
+      }
+
       const recipientEmail = reminder.recipientEmail?.trim() || userObj?.email;
       const userName = userObj?.name || 'User';
 
