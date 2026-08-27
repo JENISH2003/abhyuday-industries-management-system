@@ -144,9 +144,15 @@ app.use('/api/settings/cleanup', cleanupRoutes);
 app.use('/api/cron', cronRoutes);
 app.use('/api/personal-reminders', personalReminderRoutes);
 
-// Health check endpoint (supports both /health and /api/health)
-app.get(['/health', '/api/health'], (req, res) => {
-  res.status(200).json({ status: 'OK', timestamp: new Date(), env: config.NODE_ENV });
+// Health check endpoint (supports GET & HEAD on /health and /api/health)
+app.all(['/health', '/api/health'], (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.status(200).json({
+    status: 'OK',
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+    env: config.NODE_ENV,
+  });
 });
 
 // Serve frontend static build assets if dist directory exists (Single Fullstack Service mode)
