@@ -531,7 +531,169 @@ export const Settings: React.FC = () => {
     <div className="space-y-8 select-none max-w-5xl animate-in fade-in duration-200">
       <div>
         <h1 className="text-xl font-bold tracking-tight text-foreground">System Administration Settings</h1>
-        <p className="text-xs text-muted-foreground">Manage backup snapshots and database storage purging</p>
+        <p className="text-xs text-muted-foreground">Manage SMTP email server notifications, backup snapshots, and database storage purging</p>
+      </div>
+
+      {/* SECTION 1: SMTP Email Configuration & Verification */}
+      <div className="bg-card border border-border rounded-2xl p-6 shadow-soft space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
+          <div>
+            <h3 className="text-base font-bold text-foreground flex items-center space-x-2">
+              <Mail className="text-brand" size={18} />
+              <span>SMTP Email Server Configuration</span>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Configure outgoing email credentials for automated compliance alerts, meeting reminders, and stability notifications
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setTestRecipient(currentUser?.email || '');
+              setIsTestModalOpen(true);
+            }}
+            className="px-3.5 py-2 bg-brand/10 hover:bg-brand/20 text-brand dark:text-brand-light font-bold text-xs rounded-xl border border-brand/20 flex items-center space-x-2 transition-colors cursor-pointer shrink-0"
+          >
+            <Send size={14} />
+            <span>Send Test Email</span>
+          </button>
+        </div>
+
+        {smtpError && (
+          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-semibold text-red-600 flex items-center space-x-2">
+            <AlertCircle size={16} />
+            <span>{smtpError}</span>
+          </div>
+        )}
+
+        {smtpSuccess && (
+          <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs font-semibold text-emerald-600 flex items-center space-x-2">
+            <CheckCircle2 size={16} />
+            <span>{smtpSuccess}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSaveSmtp} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-foreground mb-1">SMTP Host</label>
+              <input
+                type="text"
+                value={smtpHost}
+                onChange={(e) => setSmtpHost(e.target.value)}
+                placeholder="e.g. smtp.gmail.com"
+                required
+                className="w-full px-3 py-2 border border-border rounded-xl text-xs bg-card outline-none focus:border-brand font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-foreground mb-1">SMTP Port</label>
+              <input
+                type="number"
+                value={smtpPort}
+                onChange={(e) => setSmtpPort(Number(e.target.value))}
+                placeholder="465 or 587"
+                required
+                className="w-full px-3 py-2 border border-border rounded-xl text-xs bg-card outline-none focus:border-brand font-medium"
+              />
+            </div>
+
+            <div className="flex items-center pt-5">
+              <label className="flex items-center space-x-2 text-xs font-bold text-foreground cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={secure}
+                  onChange={(e) => setSecure(e.target.checked)}
+                  className="w-4 h-4 text-brand rounded accent-brand cursor-pointer"
+                />
+                <span>Use SSL/TLS Connection (Port 465)</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-foreground mb-1">SMTP User / Email</label>
+              <input
+                type="email"
+                value={smtpUser}
+                onChange={(e) => setSmtpUser(e.target.value)}
+                placeholder="e.g. notifications@company.com"
+                required
+                className="w-full px-3 py-2 border border-border rounded-xl text-xs bg-card outline-none focus:border-brand font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-foreground mb-1">SMTP Password / App Password</label>
+              <input
+                type="password"
+                value={smtpPass}
+                onChange={(e) => setSmtpPass(e.target.value)}
+                placeholder="••••••••••••••••"
+                className="w-full px-3 py-2 border border-border rounded-xl text-xs bg-card outline-none focus:border-brand font-medium"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-foreground mb-1">From Sender Name</label>
+              <input
+                type="text"
+                value={fromName}
+                onChange={(e) => setFromName(e.target.value)}
+                placeholder="Abhyuday Management System"
+                className="w-full px-3 py-2 border border-border rounded-xl text-xs bg-card outline-none focus:border-brand font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-foreground mb-1">From Email Address</label>
+              <input
+                type="email"
+                value={fromEmail}
+                onChange={(e) => setFromEmail(e.target.value)}
+                placeholder="Leave blank to use SMTP User"
+                className="w-full px-3 py-2 border border-border rounded-xl text-xs bg-card outline-none focus:border-brand font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-foreground mb-1">Reply-To Address</label>
+              <input
+                type="email"
+                value={replyTo}
+                onChange={(e) => setReplyTo(e.target.value)}
+                placeholder="e.g. support@company.com"
+                className="w-full px-3 py-2 border border-border rounded-xl text-xs bg-card outline-none focus:border-brand font-medium"
+              />
+            </div>
+          </div>
+
+          <div className="pt-2 flex flex-wrap gap-3">
+            <button
+              type="submit"
+              disabled={smtpLoading}
+              className="px-5 py-2.5 bg-brand hover:bg-brand-dark text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-2 shadow-soft cursor-pointer transition-all"
+            >
+              {smtpLoading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+              <span>Save SMTP Settings</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleVerifySmtp}
+              disabled={verifyLoading}
+              className="px-5 py-2.5 bg-muted hover:bg-muted/80 text-foreground font-bold rounded-xl text-xs flex items-center justify-center space-x-2 border border-border cursor-pointer transition-all"
+            >
+              {verifyLoading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+              <span>Verify SMTP Server Connection</span>
+            </button>
+          </div>
+        </form>
       </div>
 
       {/* SECTION 2: Database Backup & Recovery */}
@@ -1078,6 +1240,88 @@ export const Settings: React.FC = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* TEST EMAIL MODAL */}
+      {isTestModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-border flex justify-between items-center bg-brand/10">
+              <div className="flex items-center space-x-2 text-brand dark:text-brand-light">
+                <Send size={18} />
+                <h3 className="text-sm font-bold">Dispatch Test Email</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsTestModalOpen(false)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-lg hover:bg-muted cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSendTestMail} className="p-6 space-y-4">
+              {testMailStatus.error && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-semibold text-red-600 flex items-center space-x-2">
+                  <AlertCircle size={16} />
+                  <span>{testMailStatus.error}</span>
+                </div>
+              )}
+
+              {testMailStatus.success && (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs font-semibold text-emerald-600 flex items-center space-x-2">
+                  <CheckCircle2 size={16} />
+                  <span>{testMailStatus.success}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-foreground mb-1">Recipient Email Address</label>
+                <input
+                  type="email"
+                  value={testRecipient}
+                  onChange={(e) => setTestRecipient(e.target.value)}
+                  placeholder="name@company.com"
+                  required
+                  className="w-full px-3 py-2 border border-border rounded-xl text-xs bg-card outline-none focus:border-brand font-medium"
+                />
+              </div>
+
+              <div className="p-3 bg-muted rounded-xl text-[11px] text-muted-foreground border border-border space-y-1">
+                <p>• Uses configured active SMTP credentials</p>
+                <p>• Verifies deliverability to actual inbox</p>
+              </div>
+
+              <div className="pt-3 border-t border-border flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setIsTestModalOpen(false)}
+                  className="px-4 py-2 border border-border rounded-xl text-xs hover:bg-muted font-bold cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={testMailStatus.loading || !testRecipient}
+                  className="px-5 py-2 bg-brand hover:bg-brand-dark disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center space-x-2 cursor-pointer shadow-soft transition-all"
+                >
+                  {testMailStatus.loading ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Sending Mail...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send size={14} />
+                      <span>Send Test Mail</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
