@@ -52,9 +52,10 @@ export const initScheduler = (): void => {
 
   // Run once on server startup for sync
   setTimeout(async () => {
-    console.log('[SCHEDULER] Running initial startup compliance, meeting, & stability checks...');
+    console.log('[SCHEDULER] Running initial startup compliance, meeting, stability & personal reminder checks...');
     await checkCertificatesCompliance();
     await checkMeetingReminders();
     await checkStabilityCompliance();
+    await checkPersonalReminders('09:00 AM');
   }, 5000);
 };

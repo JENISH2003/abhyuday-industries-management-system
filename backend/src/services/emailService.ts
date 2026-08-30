@@ -8,11 +8,15 @@ export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer
   const dbSetting = await EmailSetting.findOne().sort({ updatedAt: -1 });
 
   if (dbSetting && dbSetting.smtpUser && dbSetting.smtpPass) {
-    const port = dbSetting.smtpPort || 465;
+    const port = Number(dbSetting.smtpPort) || 587;
+    const isSecure = port === 465;
     const transporter = nodemailer.createTransport({
       host: dbSetting.smtpHost || 'smtp.gmail.com',
       port,
-      secure: port === 465,
+      secure: isSecure,
+      tls: {
+        rejectUnauthorized: false
+      },
       auth: {
         user: dbSetting.smtpUser,
         pass: dbSetting.smtpPass,
@@ -45,11 +49,15 @@ export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer
       return { transporter, from: config.SMTP_FROM };
     }
   } else {
-    const port = config.SMTP_PORT || 465;
+    const port = Number(config.SMTP_PORT) || 587;
+    const isSecure = port === 465;
     const transporter = nodemailer.createTransport({
-      host: config.SMTP_HOST,
+      host: config.SMTP_HOST || 'smtp.gmail.com',
       port,
-      secure: port === 465,
+      secure: isSecure,
+      tls: {
+        rejectUnauthorized: false
+      },
       auth: {
         user: config.SMTP_USER,
         pass: config.SMTP_PASS,

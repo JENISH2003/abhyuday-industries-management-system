@@ -4,7 +4,6 @@ services:
     env: node
     region: singapore
     plan: free
-    healthCheckPath: /health
     buildCommand: npm install && npm run build
     startCommand: npm run start
     envVars:

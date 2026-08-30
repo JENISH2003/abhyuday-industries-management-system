@@ -57,9 +57,8 @@ export const checkCertificatesCompliance = async (): Promise<void> => {
         milestoneKey = '7'; // Catches certificates entering the 7-day window
       }
 
-      // TEMPORARILY DISABLED DEDUPLICATION GUARD FOR TESTING (Can be re-enabled upon request)
-      // Original: if (!milestoneKey || (cert.sentMilestones && cert.sentMilestones.includes(milestoneKey))) { continue; }
-      if (!milestoneKey) {
+      // Deduplication Guard: Skip if alert for this milestone was already sent
+      if (!milestoneKey || (cert.sentMilestones && cert.sentMilestones.includes(milestoneKey))) {
         continue;
       }
 
@@ -117,7 +116,9 @@ export const checkCertificatesCompliance = async (): Promise<void> => {
         if (!cert.sentMilestones) {
           cert.sentMilestones = [];
         }
-        cert.sentMilestones.push(milestoneKey);
+        if (!cert.sentMilestones.includes(milestoneKey)) {
+          cert.sentMilestones.push(milestoneKey);
+        }
         await cert.save();
       }
     }

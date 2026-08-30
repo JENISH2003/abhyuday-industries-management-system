@@ -1,5 +1,6 @@
 import { Response, NextFunction } from 'express';
 import PersonalReminder from '../models/PersonalReminder';
+import ActivityLog from '../models/ActivityLog';
 import { AuthenticatedRequest } from '../types';
 
 // Get all personal reminders for current user
@@ -152,7 +153,19 @@ export const deletePersonalReminder = async (req: AuthenticatedRequest, res: Res
       return res.status(404).json({ message: 'Personal reminder not found' });
     }
 
-    res.status(200).json({ success: true, message: 'Personal reminder deleted successfully' });
+    // Permanently purge any associated ActivityLog entries for this deleted reminder
+    try {
+      await ActivityLog.deleteMany({
+        $or: [
+          { details: { $regex: reminder.title, $options: 'i' } },
+          { details: { $regex: id, $options: 'i' } }
+        ]
+      });
+    } catch (err) {
+      console.warn(`[DELETE REMINDER] Non-critical warning: activity log cleanup error:`, err);
+    }
+
+    res.status(200).json({ success: true, message: 'Personal reminder and all associated records permanently deleted from database.' });
   } catch (error) {
     next(error);
   }

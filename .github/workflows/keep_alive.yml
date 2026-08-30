@@ -3,24 +3,23 @@ name: Render Automated Keep-Alive & Daily Email Trigger
 on:
   schedule:
     # 09:00 AM IST (03:30 AM UTC) - Morning Master Email Dispatch
-    - cron: '30 3 * * *'
+    - cron: "30 3 * * *"
     # Runs every 5 minutes 24/7 to keep Render web service awake and prevent cold starts
-    - cron: '*/5 * * * *'
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 jobs:
   ping-and-dispatch:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Live Render Health Endpoint & Keep Warm
+      - name: Ping Live Render Website & Wake Up
         run: |
-          echo "Pinging health endpoint to ensure server remains warm and active..."
-          curl -sSL --max-time 60 --retry 3 -A "RenderKeepAliveBot/1.0" "https://abhyuday-industries-management-system.onrender.com/health" || echo "Ping completed with status"
+          echo "Pinging health endpoint to ensure server is awake..."
+          curl -s https://abhyuday-industries-management-system.onrender.com/health || echo "Ping attempted"
 
       - name: Trigger Daily Morning Email Dispatch (09:00 AM IST)
         if: github.event.schedule == '30 3 * * *' || github.event_name == 'workflow_dispatch'
         run: |
           echo "Triggering 09:00 AM IST Morning Email Dispatch via API..."
-          curl -sSL --max-time 60 --retry 3 -X POST "https://abhyuday-industries-management-system.onrender.com/api/cron/dispatch?slot=09:00%20AM" \
+          curl -s -X POST "https://abhyuday-industries-management-system.onrender.com/api/cron/dispatch?slot=09:00%20AM" \
             -H "x-cron-secret: abhyuday_cron_secret_key_2026" || echo "Dispatch attempt finished"
-
