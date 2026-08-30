@@ -30,6 +30,7 @@ import cronRoutes from './routes/cronRoutes';
 import fs from 'fs';
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Ensure uploads directory exists on server startup
 const uploadsDir = path.resolve(__dirname, '../uploads');
