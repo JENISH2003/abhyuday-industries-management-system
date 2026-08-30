@@ -14,6 +14,9 @@ export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer
       host: dbSetting.smtpHost || 'smtp.gmail.com',
       port,
       secure: isSecure,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
       tls: {
         rejectUnauthorized: false
       },
@@ -38,6 +41,9 @@ export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer
         host: 'smtp.ethereal.email',
         port: 587,
         secure: false,
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
         auth: {
           user: testAccount.user,
           pass: testAccount.pass,
@@ -55,6 +61,9 @@ export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer
       host: config.SMTP_HOST || 'smtp.gmail.com',
       port,
       secure: isSecure,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000,
       tls: {
         rejectUnauthorized: false
       },
