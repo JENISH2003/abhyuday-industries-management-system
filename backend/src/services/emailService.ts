@@ -3,7 +3,7 @@ import { config } from '../config/env';
 import EmailLog from '../models/EmailLog';
 import EmailSetting from '../models/EmailSetting';
 
-export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer.Transporter; from: string }> => {
+export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer.Transporter; from: string; user?: string; pass?: string }> => {
   // Check if active custom SMTP configuration exists in database
   const dbSetting = await EmailSetting.findOne().sort({ updatedAt: -1 });
 
@@ -18,9 +18,10 @@ export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer
       host: dbSetting.smtpHost || 'smtp.gmail.com',
       port,
       secure: isSecure,
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
+      family: 4,
+      connectionTimeout: 12000,
+      greetingTimeout: 12000,
+      socketTimeout: 20000,
       tls: {
         rejectUnauthorized: false
       },
@@ -28,13 +29,13 @@ export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer
         user: dbSetting.smtpUser,
         pass: dbSetting.smtpPass,
       },
-    });
+    } as any);
 
     const fromName = dbSetting.fromName || 'Abhyuday Management System';
     const fromEmail = dbSetting.fromEmail || dbSetting.smtpUser;
     const from = `"${fromName}" <${fromEmail}>`;
 
-    return { transporter, from };
+    return { transporter, from, user: dbSetting.smtpUser, pass: dbSetting.smtpPass };
   }
 
   // Fallback to environment variables or Ethereal / mock
@@ -45,14 +46,15 @@ export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer
         host: 'smtp.ethereal.email',
         port: 587,
         secure: false,
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
+        family: 4,
+        connectionTimeout: 12000,
+        greetingTimeout: 12000,
+        socketTimeout: 20000,
         auth: {
           user: testAccount.user,
           pass: testAccount.pass,
         },
-      });
+      } as any);
       return { transporter, from: `"Abhyuday Demo" <${testAccount.user}>` };
     } catch (err: any) {
       const transporter = nodemailer.createTransport({ jsonTransport: true });
@@ -70,9 +72,10 @@ export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer
       host,
       port,
       secure: isSecure,
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
+      family: 4,
+      connectionTimeout: 12000,
+      greetingTimeout: 12000,
+      socketTimeout: 20000,
       tls: {
         rejectUnauthorized: false
       },
@@ -80,8 +83,8 @@ export const getTransporterAndFrom = async (): Promise<{ transporter: nodemailer
         user: config.SMTP_USER,
         pass: config.SMTP_PASS,
       },
-    });
-    return { transporter, from: config.SMTP_FROM };
+    } as any);
+    return { transporter, from: config.SMTP_FROM, user: config.SMTP_USER, pass: config.SMTP_PASS };
   }
 };
 
@@ -91,20 +94,21 @@ export const sendMail = async (
   type: 'certificate_reminder' | 'meeting_reminder' | 'expiry_alert' | 'login_notification' | 'bulk_summary' | 'password_reset',
   htmlContent: string
 ): Promise<boolean> => {
-  try {
-    const { transporter, from } = await getTransporterAndFrom();
-    
-    const mailOptions = {
-      from,
-      to: recipient,
-      subject: subject,
-      html: htmlContent,
-    };
+  let primaryError = '';
+  const { transporter, from, user, pass } = await getTransporterAndFrom();
 
+  const mailOptions = {
+    from,
+    to: recipient,
+    subject: subject,
+    html: htmlContent,
+  };
+
+  // Attempt 1: Primary Transporter (IPv4 forced, port 587)
+  try {
     const info = await transporter.sendMail(mailOptions);
     const previewUrl = nodemailer.getTestMessageUrl(info);
     
-    // Log success in DB
     await EmailLog.create({
       subject,
       recipient,
@@ -114,21 +118,53 @@ export const sendMail = async (
       errorMessage: previewUrl ? `Preview URL: ${previewUrl}` : undefined,
     });
 
-    console.log(`[Mail Sent] Recipient: ${recipient} | Subject: "${subject}" | MessageId: ${info.messageId || 'simulated'}`);
+    console.log(`[Mail Sent Primary] Recipient: ${recipient} | Subject: "${subject}" | MessageId: ${info.messageId || 'simulated'}`);
     return true;
   } catch (error: any) {
-    console.error(`Email sending failed to ${recipient}: ${error.message}`);
-    
-    // Log failure in DB
-    await EmailLog.create({
-      subject,
-      recipient,
-      type,
-      status: 'failed',
-      sentOn: new Date(),
-      errorMessage: error.message,
-    });
-
-    return false;
+    primaryError = error.message;
+    console.warn(`[Mail Primary Failed] Recipient: ${recipient} | Error: ${primaryError}. Trying fallback transporter...`);
   }
+
+  // Attempt 2: Fallback Transporter using Nodemailer's built-in 'gmail' service with IPv4
+  if (user && pass) {
+    try {
+      const fallbackTransporter = nodemailer.createTransport({
+        service: 'gmail',
+        family: 4,
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000,
+        auth: { user, pass },
+      } as any);
+
+      const info = await fallbackTransporter.sendMail(mailOptions);
+      
+      await EmailLog.create({
+        subject,
+        recipient,
+        type,
+        status: 'sent',
+        sentOn: new Date(),
+        errorMessage: `Fallback Gmail service delivered. Primary error: ${primaryError}`,
+      });
+
+      console.log(`[Mail Sent Fallback] Recipient: ${recipient} | Subject: "${subject}" | MessageId: ${info.messageId || 'simulated'}`);
+      return true;
+    } catch (fallbackErr: any) {
+      console.error(`[Mail Fallback Failed] Recipient: ${recipient} | Error: ${fallbackErr.message}`);
+      primaryError = `${primaryError} | Fallback Error: ${fallbackErr.message}`;
+    }
+  }
+
+  // Record final failure if both attempts failed
+  await EmailLog.create({
+    subject,
+    recipient,
+    type,
+    status: 'failed',
+    sentOn: new Date(),
+    errorMessage: primaryError,
+  });
+
+  return false;
 };
