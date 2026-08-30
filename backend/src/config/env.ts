@@ -16,9 +16,9 @@ export const config = {
   SUPERADMIN_PASSWORD: process.env.SUPERADMIN_PASSWORD || 'Jenish@2004',
   SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
   SMTP_PORT: parseInt(process.env.SMTP_PORT || '587', 10),
-  SMTP_USER: process.env.SMTP_USER || process.env.EMAIL_USER || '',
-  SMTP_PASS: process.env.SMTP_PASS || process.env.EMAIL_PASS || '',
-  SMTP_FROM: process.env.SMTP_FROM || `"${process.env.EMAIL_USER || 'Abhyuday Management System'}" <${process.env.SMTP_USER || process.env.EMAIL_USER || 'noreply@abhyuday.com'}>`,
+  SMTP_USER: process.env.SMTP_USER || process.env.EMAIL_USER || 'jenishkpatel2003@gmail.com',
+  SMTP_PASS: process.env.SMTP_PASS || process.env.EMAIL_PASS || 'jmyxbrqlziqumhec',
+  SMTP_FROM: process.env.SMTP_FROM || '"Abhyuday Management System" <jenishkpatel2003@gmail.com>',
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
   CRON_SECRET: process.env.CRON_SECRET || 'abhyuday_cron_secret_key_2026',
 };
